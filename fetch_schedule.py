@@ -98,6 +98,13 @@ for i, day_date in enumerate(week_dates):
                 except Exception:
                     pass
 
+                # Groups (e.g. ["1"] for split lessons such as PW)
+                groups = []
+                try:
+                    groups = [g for g in (getattr(lesson, "groups", None) or []) if g]
+                except Exception:
+                    pass
+
                 # Teachers (it's a list in v0.13)
                 teacher = ""
                 try:
@@ -117,6 +124,7 @@ for i, day_date in enumerate(week_dates):
                 lessons.append({
                     "number": idx,
                     "subject": subject,
+                    "groups": groups,
                     "teacher": teacher,
                     "classroom": classroom,
                     "start": fmt_time(lesson.start_time),

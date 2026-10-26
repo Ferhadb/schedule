@@ -8,6 +8,7 @@ Built so my team lead can check when I have free time to come to work.
 
 - Weekly schedule showing all lessons per day
 - Lesson count badge per day
+- Group badges on split lessons (e.g. `PW Group 1` / `PW Group 2`)
 - Today's column is highlighted
 - Auto-updated twice a week via GitHub Actions
 

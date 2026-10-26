@@ -149,6 +149,20 @@
       font-weight: 400;
     }
 
+    .lesson-group {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 1px 7px;
+      border-radius: 99px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent2);
+      font-size: 0.68rem;
+      font-weight: 700;
+      vertical-align: 1px;
+      white-space: nowrap;
+    }
+
     .lesson-meta {
       font-size: 0.75rem;
       color: var(--muted);
@@ -255,12 +269,24 @@
       return new Date().toISOString().slice(0, 10);
     }
 
+    function groupLabel(group) {
+      const value = String(group).trim();
+      return /^\d+$/.test(value) ? `Group ${value}` : value;
+    }
+
     // ---------------------------------------------------------------
     // Render
     // ---------------------------------------------------------------
     function renderLesson(lesson) {
       const subjectText = lesson.subject || `Lesson ${lesson.number}`;
       const subjectClass = lesson.subject ? "" : "empty";
+
+      const groupLabels = Array.isArray(lesson.groups)
+        ? lesson.groups.filter(Boolean).map(groupLabel)
+        : [];
+      const groupHTML = groupLabels.length
+        ? `<span class="lesson-group">${groupLabels.join(", ")}</span>`
+        : "";
 
       const metaParts = [];
       if (lesson.start && lesson.end) metaParts.push(`${lesson.start}–${lesson.end}`);
@@ -273,7 +299,7 @@
         <div class="lesson-row">
           <div class="lesson-number">${lesson.number}.</div>
           <div class="lesson-info">
-            <div class="lesson-subject ${subjectClass}">${subjectText}</div>
+            <div class="lesson-subject ${subjectClass}">${subjectText}${groupHTML}</div>
             <div class="lesson-meta">${metaHTML}</div>
           </div>
         </div>`;
