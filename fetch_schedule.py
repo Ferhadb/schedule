@@ -22,16 +22,19 @@ if not EDUPAGE_USERNAME or not EDUPAGE_PASSWORD:
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
-# Login
+# Import edupage-api  (package: edupage-api, module: edupage_api)
 # ---------------------------------------------------------------------------
 try:
     from edupage_api import Edupage
     from edupage_api.exceptions import BadCredentialsException, LoginDataParsingException
-    from edupage_api.dbi import EduStudent
-except ImportError:
-    print("ERROR: edupage-api is not installed. Run: pip install edupage-api")
+except ImportError as e:
+    print(f"ERROR: edupage-api is not installed or has wrong structure: {e}")
+    print("Run: pip install edupage-api")
     sys.exit(1)
 
+# ---------------------------------------------------------------------------
+# Login
+# ---------------------------------------------------------------------------
 edupage = Edupage()
 
 try:
@@ -49,16 +52,16 @@ except LoginDataParsingException as e:
 # Figure out current week (Monday → Sunday)
 # ---------------------------------------------------------------------------
 today = date.today()
-monday = today - timedelta(days=today.weekday())          # Monday of current week
-week_dates = [monday + timedelta(days=i) for i in range(7)]  # Mon–Sun
+monday = today - timedelta(days=today.weekday())       # Monday of current week
+week_dates = [monday + timedelta(days=i) for i in range(7)]
 
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 # ---------------------------------------------------------------------------
 # Fetch timetable for each day
 # ---------------------------------------------------------------------------
-def format_time(t) -> str:
-    """Return HH:MM string from a time-like object, or empty string."""
+def fmt_time(t) -> str:
+    """Return HH:MM string from a datetime.time object, or empty string."""
     if t is None:
         return ""
     try:
@@ -70,42 +73,41 @@ days_data = []
 
 for i, day_date in enumerate(week_dates):
     day_name = DAY_NAMES[i]
-    try:
-        from edupage_api.lunches import EduDate  # some versions use this path
-    except ImportError:
-        try:
-            from edupage_api import EduDate
-        except ImportError:
-            EduDate = None
 
+    timetable = None
     try:
-        if EduDate is not None:
-            edu_date = EduDate(day_date.year, day_date.month, day_date.day)
-            timetable = edupage.get_timetable(edu_date)
-        else:
-            timetable = edupage.get_timetable(day_date)
+        timetable = edupage.get_timetable(day_date)
     except Exception as e:
         print(f"  {day_name} ({day_date}): could not fetch timetable — {e}")
-        timetable = None
 
     lessons = []
     if timetable:
         try:
-            lesson_objects = timetable.lessons if hasattr(timetable, "lessons") else []
-            for idx, lesson in enumerate(lesson_objects, start=1):
+            for idx, lesson in enumerate(timetable.lessons, start=1):
+                # Skip cancelled lessons
+                if getattr(lesson, "is_cancelled", False):
+                    continue
+
+                # Subject
                 subject = ""
                 try:
                     subject = lesson.subject.name if lesson.subject else ""
                 except Exception:
                     pass
+
+                # Teachers (it's a list in v0.13)
                 teacher = ""
                 try:
-                    teacher = lesson.teacher.name if lesson.teacher else ""
+                    teachers = lesson.teachers or []
+                    teacher = ", ".join(t.name for t in teachers if t and t.name)
                 except Exception:
                     pass
+
+                # Classrooms (also a list)
                 classroom = ""
                 try:
-                    classroom = lesson.classroom.name if lesson.classroom else ""
+                    classrooms = lesson.classrooms or []
+                    classroom = ", ".join(c.name for c in classrooms if c and c.name)
                 except Exception:
                     pass
 
@@ -114,8 +116,9 @@ for i, day_date in enumerate(week_dates):
                     "subject": subject,
                     "teacher": teacher,
                     "classroom": classroom,
-                    "start": format_time(getattr(lesson, "start_time", None) or getattr(lesson, "start", None)),
-                    "end": format_time(getattr(lesson, "end_time", None) or getattr(lesson, "end", None)),
+                    "start": fmt_time(lesson.start_time),
+                    "end": fmt_time(lesson.end_time),
+                    "online_link": getattr(lesson, "online_lesson_link", None) or "",
                 })
         except Exception as e:
             print(f"  {day_name}: error iterating lessons — {e}")
@@ -129,7 +132,7 @@ for i, day_date in enumerate(week_dates):
     print(f"  {day_name} ({day_date}): {len(lessons)} lesson(s)")
 
 # ---------------------------------------------------------------------------
-# Write output
+# Write schedule.json
 # ---------------------------------------------------------------------------
 output = {
     "week_start": str(monday),
@@ -137,7 +140,7 @@ output = {
     "days": days_data,
 }
 
-output_path = os.path.join(os.path.dirname(__file__), "schedule.json")
+output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schedule.json")
 with open(output_path, "w", encoding="utf-8") as f:
     json.dump(output, f, ensure_ascii=False, indent=2)
 
