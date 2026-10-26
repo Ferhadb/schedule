@@ -70,14 +70,17 @@ def fmt_time(t) -> str:
         return str(t)
 
 days_data = []
+fetch_failures = []
 
 for i, day_date in enumerate(week_dates):
     day_name = DAY_NAMES[i]
 
     timetable = None
+    day_failed = False
     try:
         timetable = edupage.get_my_timetable(day_date)
     except Exception as e:
+        day_failed = True
         print(f"  {day_name} ({day_date}): could not fetch timetable — {e}")
 
     lessons = []
@@ -121,7 +124,11 @@ for i, day_date in enumerate(week_dates):
                     "online_link": getattr(lesson, "online_lesson_link", None) or "",
                 })
         except Exception as e:
+            day_failed = True
             print(f"  {day_name}: error iterating lessons — {e}")
+
+    if day_failed:
+        fetch_failures.append(day_name)
 
     days_data.append({
         "day": day_name,
@@ -130,6 +137,16 @@ for i, day_date in enumerate(week_dates):
         "lesson_count": len(lessons),
     })
     print(f"  {day_name} ({day_date}): {len(lessons)} lesson(s)")
+
+# ---------------------------------------------------------------------------
+# Abort instead of overwriting a good schedule with an empty one
+# ---------------------------------------------------------------------------
+if len(fetch_failures) == len(week_dates):
+    print(
+        "\nERROR: Could not fetch the timetable for any day. "
+        "schedule.json was left unchanged."
+    )
+    sys.exit(1)
 
 # ---------------------------------------------------------------------------
 # Write schedule.json

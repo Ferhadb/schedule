@@ -58,7 +58,7 @@ https://<your-username>.github.io/<repo-name>/
 ## Local development
 
 ```bash
-pip install edupage-api
+pip install -r requirements.txt
 export EDUPAGE_USERNAME="your_username"
 export EDUPAGE_PASSWORD="your_password"
 python fetch_schedule.py
