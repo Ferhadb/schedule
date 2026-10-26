@@ -19,8 +19,6 @@
       --accent2: #a78bfa;
       --text: #e8eaf6;
       --muted: #8b8fb4;
-      --green: #4ade80;
-      --amber: #fbbf24;
       --red: #f87171;
       --lesson-bg: #1e2235;
       --no-lesson-bg: #161826;
@@ -52,30 +50,6 @@
       color: var(--muted);
       font-size: 0.85rem;
       margin-bottom: 28px;
-    }
-
-    /* ---------------------------------------------------------------
-       Legend
-    --------------------------------------------------------------- */
-    .legend {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-
-    .legend-dot {
-      width: 12px; height: 12px;
-      border-radius: 50%;
     }
 
     /* ---------------------------------------------------------------
@@ -190,53 +164,6 @@
     .lesson-meta span:first-child::before { content: ""; margin: 0; }
 
     /* ---------------------------------------------------------------
-       Toggle buttons (online / skippable)
-    --------------------------------------------------------------- */
-    .lesson-toggles {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      align-items: flex-end;
-      flex-shrink: 0;
-    }
-
-    .toggle-btn {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 99px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      background: transparent;
-      color: var(--muted);
-      border-color: var(--border);
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .toggle-btn:hover { opacity: 0.85; }
-
-    .toggle-btn.active-online {
-      background: rgba(74, 222, 128, 0.15);
-      border-color: var(--green);
-      color: var(--green);
-    }
-
-    .toggle-btn.active-skip {
-      background: rgba(251, 191, 36, 0.15);
-      border-color: var(--amber);
-      color: var(--amber);
-    }
-
-    .toggle-btn svg {
-      width: 11px; height: 11px;
-      flex-shrink: 0;
-    }
-
-    /* ---------------------------------------------------------------
        No-lesson day
     --------------------------------------------------------------- */
     .no-lessons {
@@ -306,17 +233,6 @@
 
   <div id="error-banner" class="error-banner" style="display:none"></div>
 
-  <div class="legend">
-    <div class="legend-item">
-      <div class="legend-dot" style="background:var(--green)"></div>
-      <span>Online — I can come to work</span>
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:var(--amber)"></div>
-      <span>Skippable — I can skip without absence</span>
-    </div>
-  </div>
-
   <div class="week-grid" id="week-grid"></div>
 
   <div class="meta-bar" id="meta-bar"></div>
@@ -326,6 +242,9 @@
     // Helpers
     // ---------------------------------------------------------------
     const $ = id => document.getElementById(id);
+
+    // Older versions stored lesson marks in localStorage; clean them up.
+    try { localStorage.removeItem("lesson_toggles"); } catch {}
 
     function fmtDate(isoStr) {
       const d = new Date(isoStr + "T00:00:00");
@@ -337,34 +256,9 @@
     }
 
     // ---------------------------------------------------------------
-    // localStorage toggle state
-    // key: "toggles" → { "2026-10-28_1_online": true, ... }
-    // ---------------------------------------------------------------
-    const STATE_KEY = "lesson_toggles";
-
-    function getState() {
-      try { return JSON.parse(localStorage.getItem(STATE_KEY) || "{}"); }
-      catch { return {}; }
-    }
-
-    function saveState(state) {
-      localStorage.setItem(STATE_KEY, JSON.stringify(state));
-    }
-
-    function toggleKey(date, lessonNum, type) {
-      return `${date}_${lessonNum}_${type}`;
-    }
-
-    // ---------------------------------------------------------------
     // Render
     // ---------------------------------------------------------------
-    function renderLesson(dayDate, lesson) {
-      const state = getState();
-      const onlineKey = toggleKey(dayDate, lesson.number, "online");
-      const skipKey   = toggleKey(dayDate, lesson.number, "skip");
-      const isOnline  = !!state[onlineKey];
-      const isSkip    = !!state[skipKey];
-
+    function renderLesson(lesson) {
       const subjectText = lesson.subject || `Lesson ${lesson.number}`;
       const subjectClass = lesson.subject ? "" : "empty";
 
@@ -376,37 +270,11 @@
       const metaHTML = metaParts.map(p => `<span>${p}</span>`).join("");
 
       return `
-        <div class="lesson-row" data-date="${dayDate}" data-num="${lesson.number}">
+        <div class="lesson-row">
           <div class="lesson-number">${lesson.number}.</div>
           <div class="lesson-info">
             <div class="lesson-subject ${subjectClass}">${subjectText}</div>
             <div class="lesson-meta">${metaHTML}</div>
-          </div>
-          <div class="lesson-toggles">
-            <button
-              class="toggle-btn ${isOnline ? 'active-online' : ''}"
-              data-key="${onlineKey}"
-              data-type="online"
-              data-partner="${skipKey}"
-              title="Mark as Online (I can come to office)"
-            >
-              <svg viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.75 5.97-4.2 4.2a.75.75 0 0 1-1.06 0l-1.69-1.69a.75.75 0 1 1 1.06-1.06l1.16 1.16 3.67-3.67a.75.75 0 1 1 1.06 1.06z"/>
-              </svg>
-              Online
-            </button>
-            <button
-              class="toggle-btn ${isSkip ? 'active-skip' : ''}"
-              data-key="${skipKey}"
-              data-type="skip"
-              data-partner="${onlineKey}"
-              title="Mark as Skippable (no absence)"
-            >
-              <svg viewBox="0 0 16 16" fill="currentColor">
-                <path d="M3.75 7.25a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5z"/>
-              </svg>
-              Skip
-            </button>
           </div>
         </div>`;
     }
@@ -422,7 +290,7 @@
       if (dayData.lessons.length === 0) {
         bodyHTML = `<div class="no-lessons">No lessons — free day 🎉</div>`;
       } else {
-        bodyHTML = `<div class="lessons-list">${dayData.lessons.map(l => renderLesson(dayData.date, l)).join("")}</div>`;
+        bodyHTML = `<div class="lessons-list">${dayData.lessons.map(renderLesson).join("")}</div>`;
       }
 
       return `
@@ -437,43 +305,6 @@
           ${bodyHTML}
         </div>`;
     }
-
-    // ---------------------------------------------------------------
-    // Wire up toggle buttons (event delegation)
-    // ---------------------------------------------------------------
-    document.getElementById("week-grid").addEventListener("click", e => {
-      const btn = e.target.closest(".toggle-btn");
-      if (!btn) return;
-
-      const state   = getState();
-      const key     = btn.dataset.key;
-      const type    = btn.dataset.type;
-      const partner = btn.dataset.partner;
-
-      const wasActive = !!state[key];
-
-      // Toggle this button; clear partner if activating
-      if (!wasActive) {
-        state[key] = true;
-        delete state[partner];
-      } else {
-        delete state[key];
-      }
-
-      saveState(state);
-
-      // Re-render just that button and its partner
-      const row = btn.closest(".lesson-row");
-      const allBtns = row.querySelectorAll(".toggle-btn");
-      allBtns.forEach(b => {
-        const k = b.dataset.key;
-        const t = b.dataset.type;
-        b.classList.remove("active-online", "active-skip");
-        if (state[k]) {
-          b.classList.add(t === "online" ? "active-online" : "active-skip");
-        }
-      });
-    });
 
     // ---------------------------------------------------------------
     // Load data
@@ -494,7 +325,6 @@
 
         $("meta-bar").innerHTML =
           `Data fetched: <strong>${data.fetched_at}</strong> &nbsp;·&nbsp; ` +
-          `Marks stored locally in your browser &nbsp;·&nbsp; ` +
           `<a href="https://ufaz.edupage.org" target="_blank" rel="noopener">Open Edupage ↗</a>`;
 
       } catch (err) {

@@ -8,9 +8,6 @@ Built so my team lead can check when I have free time to come to work.
 
 - Weekly schedule showing all lessons per day
 - Lesson count badge per day
-- **Online** ✅ toggle — mark a lesson as online (I can come to office)
-- **Skippable** 🟡 toggle — mark a lesson as skippable without absence
-- Toggle state saved in browser `localStorage` (persists across visits)
 - Today's column is highlighted
 - Auto-updated twice a week via GitHub Actions
 
