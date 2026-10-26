@@ -746,6 +746,16 @@
       return apiRequest(`${officeApiPath()}?ref=${BRANCH}`, token);
     }
 
+    // A read token can fetch the file, so verify write access with a tiny
+    // unreferenced blob before letting edit mode start.
+    async function verifyWriteAccess(token) {
+      return apiRequest(`/repos/${REPO_OWNER}/${REPO_NAME}/git/blobs`, token, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: "office-write-check", encoding: "utf-8" }),
+      });
+    }
+
     async function saveOfficeData(state) {
       const token = getStoredToken();
       if (!token) throw Object.assign(new Error("No token"), { status: 401 });
@@ -803,10 +813,16 @@
         } catch (error) {
           officeData = clone(lastSavedOfficeData);
           renderAll();
-          if (error.status === 401 || error.status === 403) {
+          if (error.status === 401) {
             clearStoredToken();
             setEditMode(false);
             openTokenModal("Your token is invalid or expired. Paste a new one.");
+          } else if (error.status === 403) {
+            clearStoredToken();
+            setEditMode(false);
+            openTokenModal(
+              "This token can read but not save. Recreate it with Contents: Read and write."
+            );
           } else {
             showToast("Could not save office hours. Please try again.");
           }
@@ -911,14 +927,31 @@
 
       try {
         await fetchOfficeMeta(token);
+
+        try {
+          await verifyWriteAccess(token);
+        } catch (writeError) {
+          if (writeError.status === 403) {
+            errorElement.textContent = /rate limit/i.test(writeError.body || "")
+              ? "GitHub rate limit reached. Try again later."
+              : "This token is read-only. Recreate it with Contents: Read and write.";
+            return;
+          }
+          throw writeError;
+        }
+
         setStoredToken(token);
         closeTokenModal();
         setEditMode(true);
       } catch (error) {
-        if (error.status === 401 || error.status === 403) {
-          errorElement.textContent = "Token is invalid or has no access to this repo.";
+        if (error.status === 401) {
+          errorElement.textContent = "Token is invalid or expired. Create a new one.";
+        } else if (error.status === 403) {
+          errorElement.textContent = /rate limit/i.test(error.body || "")
+            ? "GitHub rate limit reached. Try again later."
+            : "Token has no access to this repo.";
         } else if (error.status === 404) {
-          errorElement.textContent = "Token works, but office.json was not found in the repo.";
+          errorElement.textContent = "Token does not have access to Ferhadb/schedule.";
         } else {
           errorElement.textContent = "Could not verify the token. Check your connection and try again.";
         }
