@@ -76,7 +76,7 @@ for i, day_date in enumerate(week_dates):
 
     timetable = None
     try:
-        timetable = edupage.get_timetable(day_date)
+        timetable = edupage.get_my_timetable(day_date)
     except Exception as e:
         print(f"  {day_name} ({day_date}): could not fetch timetable — {e}")
 
