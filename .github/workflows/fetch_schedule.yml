@@ -1,0 +1,40 @@
+name: Fetch Edupage Schedule
+
+on:
+  schedule:
+    # Runs every Monday at 06:00 UTC and Thursday at 06:00 UTC
+    - cron: "0 6 * * 1"
+    - cron: "0 6 * * 4"
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to commit schedule.json back to the repo
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch schedule from Edupage
+        env:
+          EDUPAGE_USERNAME: ${{ secrets.EDUPAGE_USERNAME }}
+          EDUPAGE_PASSWORD: ${{ secrets.EDUPAGE_PASSWORD }}
+        run: python fetch_schedule.py
+
+      - name: Commit and push schedule.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add schedule.json
+          git diff --staged --quiet || git commit -m "chore: update schedule.json [skip ci]"
+          git push
