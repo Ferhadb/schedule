@@ -5,32 +5,208 @@
     {
       "day": "Monday",
       "date": "2026-10-26",
-      "lessons": [],
-      "lesson_count": 0
+      "lessons": [
+        {
+          "number": 1,
+          "subject": "UE301 Math4 - Vector Analysis/EX",
+          "teacher": "Narmina Asgarova",
+          "classroom": "207",
+          "start": "08:30",
+          "end": "10:00",
+          "online_link": ""
+        },
+        {
+          "number": 2,
+          "subject": "UE304 Electricity for CS,CE&CH/LC",
+          "teacher": "Gulnaz Gahramanova",
+          "classroom": "403",
+          "start": "10:15",
+          "end": "11:45",
+          "online_link": ""
+        },
+        {
+          "number": 3,
+          "subject": "EXAM French",
+          "teacher": "Khalid Aslanov, Nazrin Hashimova",
+          "classroom": "308",
+          "start": "12:45",
+          "end": "14:15",
+          "online_link": ""
+        },
+        {
+          "number": 4,
+          "subject": "UE315 Software Engineering/LC",
+          "teacher": "Igor Peretta",
+          "classroom": "307",
+          "start": "14:30",
+          "end": "16:00",
+          "online_link": ""
+        }
+      ],
+      "lesson_count": 4
     },
     {
       "day": "Tuesday",
       "date": "2026-10-27",
-      "lessons": [],
-      "lesson_count": 0
+      "lessons": [
+        {
+          "number": 1,
+          "subject": "UE316 Signal Processing/EX",
+          "teacher": "Seymur Mirzabayov",
+          "classroom": "307",
+          "start": "08:30",
+          "end": "10:00",
+          "online_link": ""
+        },
+        {
+          "number": 2,
+          "subject": "UE328 French/IC",
+          "teacher": "Khalid Aslanov, Irada Piriyeva",
+          "classroom": "402",
+          "start": "10:15",
+          "end": "11:45",
+          "online_link": ""
+        },
+        {
+          "number": 3,
+          "subject": "UE315 Software Engineering/LC",
+          "teacher": "Igor Peretta",
+          "classroom": "102",
+          "start": "12:45",
+          "end": "14:15",
+          "online_link": ""
+        },
+        {
+          "number": 4,
+          "subject": "UE315 Software Engineering/LC",
+          "teacher": "Igor Peretta",
+          "classroom": "402",
+          "start": "14:30",
+          "end": "16:00",
+          "online_link": ""
+        }
+      ],
+      "lesson_count": 4
     },
     {
       "day": "Wednesday",
       "date": "2026-10-28",
-      "lessons": [],
-      "lesson_count": 0
+      "lessons": [
+        {
+          "number": 1,
+          "subject": "UE316 Signal Processing/EX",
+          "teacher": "Seymur Mirzabayov",
+          "classroom": "402",
+          "start": "08:30",
+          "end": "10:00",
+          "online_link": ""
+        },
+        {
+          "number": 2,
+          "subject": "UE304 Electricity for CS,CE&CH/EX",
+          "teacher": "Gulnaz Gahramanova",
+          "classroom": "209",
+          "start": "10:15",
+          "end": "11:45",
+          "online_link": ""
+        },
+        {
+          "number": 3,
+          "subject": "UE315 Software Engineering/LC",
+          "teacher": "Igor Peretta",
+          "classroom": "307",
+          "start": "12:45",
+          "end": "14:15",
+          "online_link": ""
+        }
+      ],
+      "lesson_count": 3
     },
     {
       "day": "Thursday",
       "date": "2026-10-29",
-      "lessons": [],
-      "lesson_count": 0
+      "lessons": [
+        {
+          "number": 1,
+          "subject": "EXAM  Signal Processing/ CS",
+          "teacher": "Seymur Mirzabayov, Nisa Idrisova",
+          "classroom": "308",
+          "start": "08:30",
+          "end": "10:00",
+          "online_link": ""
+        },
+        {
+          "number": 2,
+          "subject": "UE302 Electromagnetism/EX",
+          "teacher": "AliHuseyn Dovlatov",
+          "classroom": "205",
+          "start": "10:15",
+          "end": "11:45",
+          "online_link": ""
+        },
+        {
+          "number": 3,
+          "subject": "UE315 Software Engineering/LC",
+          "teacher": "Igor Peretta",
+          "classroom": "307",
+          "start": "12:45",
+          "end": "14:15",
+          "online_link": ""
+        },
+        {
+          "number": 4,
+          "subject": "UE315 Software Engineering/PW",
+          "teacher": "Igor Peretta",
+          "classroom": "406",
+          "start": "14:30",
+          "end": "16:00",
+          "online_link": ""
+        }
+      ],
+      "lesson_count": 4
     },
     {
       "day": "Friday",
       "date": "2026-10-30",
-      "lessons": [],
-      "lesson_count": 0
+      "lessons": [
+        {
+          "number": 1,
+          "subject": "EXAM French",
+          "teacher": "Irada Piriyeva, Gulyaz Najafova",
+          "classroom": "204",
+          "start": "08:30",
+          "end": "10:00",
+          "online_link": ""
+        },
+        {
+          "number": 2,
+          "subject": "UE328 French/IC",
+          "teacher": "Khalid Aslanov, Irada Piriyeva",
+          "classroom": "202",
+          "start": "10:15",
+          "end": "11:45",
+          "online_link": ""
+        },
+        {
+          "number": 3,
+          "subject": "UE315 Software Engineering/LC",
+          "teacher": "Igor Peretta",
+          "classroom": "307",
+          "start": "12:45",
+          "end": "14:15",
+          "online_link": ""
+        },
+        {
+          "number": 4,
+          "subject": "UE315 Software Engineering/PW",
+          "teacher": "Igor Peretta",
+          "classroom": "405",
+          "start": "14:30",
+          "end": "16:00",
+          "online_link": ""
+        }
+      ],
+      "lesson_count": 4
     },
     {
       "day": "Saturday",
