@@ -26,7 +26,7 @@ if not EDUPAGE_USERNAME or not EDUPAGE_PASSWORD:
 # ---------------------------------------------------------------------------
 try:
     from edupage_api import Edupage
-    from edupage_api.exceptions import BadCredentialsException, LoginDataParsingException
+    from edupage_api.exceptions import BadCredentialsException
 except ImportError as e:
     print(f"ERROR: edupage-api is not installed or has wrong structure: {e}")
     print("Run: pip install edupage-api")
@@ -44,8 +44,8 @@ try:
 except BadCredentialsException:
     print("ERROR: Bad credentials. Check EDUPAGE_USERNAME / EDUPAGE_PASSWORD.")
     sys.exit(1)
-except LoginDataParsingException as e:
-    print(f"ERROR: Failed to parse login data: {e}")
+except Exception as e:
+    print(f"ERROR: Login failed: {e}")
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
