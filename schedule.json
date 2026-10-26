@@ -9,6 +9,7 @@
         {
           "number": 1,
           "subject": "UE301 Math4 - Vector Analysis/EX",
+          "groups": [],
           "teacher": "Narmina Asgarova",
           "classroom": "207",
           "start": "08:30",
@@ -18,6 +19,7 @@
         {
           "number": 2,
           "subject": "UE304 Electricity for CS,CE&CH/LC",
+          "groups": [],
           "teacher": "Gulnaz Gahramanova",
           "classroom": "403",
           "start": "10:15",
@@ -27,6 +29,9 @@
         {
           "number": 3,
           "subject": "EXAM French",
+          "groups": [
+            "Group 1"
+          ],
           "teacher": "Khalid Aslanov, Nazrin Hashimova",
           "classroom": "308",
           "start": "12:45",
@@ -36,6 +41,7 @@
         {
           "number": 4,
           "subject": "UE315 Software Engineering/LC",
+          "groups": [],
           "teacher": "Igor Peretta",
           "classroom": "307",
           "start": "14:30",
@@ -52,6 +58,7 @@
         {
           "number": 1,
           "subject": "UE316 Signal Processing/EX",
+          "groups": [],
           "teacher": "Seymur Mirzabayov",
           "classroom": "307",
           "start": "08:30",
@@ -61,6 +68,7 @@
         {
           "number": 2,
           "subject": "UE328 French/IC",
+          "groups": [],
           "teacher": "Khalid Aslanov, Irada Piriyeva",
           "classroom": "402",
           "start": "10:15",
@@ -70,6 +78,7 @@
         {
           "number": 3,
           "subject": "UE315 Software Engineering/LC",
+          "groups": [],
           "teacher": "Igor Peretta",
           "classroom": "102",
           "start": "12:45",
@@ -79,6 +88,7 @@
         {
           "number": 4,
           "subject": "UE315 Software Engineering/LC",
+          "groups": [],
           "teacher": "Igor Peretta",
           "classroom": "402",
           "start": "14:30",
@@ -95,6 +105,7 @@
         {
           "number": 1,
           "subject": "UE316 Signal Processing/EX",
+          "groups": [],
           "teacher": "Seymur Mirzabayov",
           "classroom": "402",
           "start": "08:30",
@@ -104,6 +115,7 @@
         {
           "number": 2,
           "subject": "UE304 Electricity for CS,CE&CH/EX",
+          "groups": [],
           "teacher": "Gulnaz Gahramanova",
           "classroom": "209",
           "start": "10:15",
@@ -113,6 +125,7 @@
         {
           "number": 3,
           "subject": "UE315 Software Engineering/LC",
+          "groups": [],
           "teacher": "Igor Peretta",
           "classroom": "307",
           "start": "12:45",
@@ -129,6 +142,7 @@
         {
           "number": 1,
           "subject": "EXAM  Signal Processing/ CS",
+          "groups": [],
           "teacher": "Seymur Mirzabayov, Nisa Idrisova",
           "classroom": "308",
           "start": "08:30",
@@ -138,6 +152,7 @@
         {
           "number": 2,
           "subject": "UE302 Electromagnetism/EX",
+          "groups": [],
           "teacher": "AliHuseyn Dovlatov",
           "classroom": "205",
           "start": "10:15",
@@ -147,6 +162,7 @@
         {
           "number": 3,
           "subject": "UE315 Software Engineering/LC",
+          "groups": [],
           "teacher": "Igor Peretta",
           "classroom": "307",
           "start": "12:45",
@@ -156,6 +172,9 @@
         {
           "number": 4,
           "subject": "UE315 Software Engineering/PW",
+          "groups": [
+            "Group 2"
+          ],
           "teacher": "Igor Peretta",
           "classroom": "406",
           "start": "14:30",
@@ -172,6 +191,9 @@
         {
           "number": 1,
           "subject": "EXAM French",
+          "groups": [
+            "Group 1"
+          ],
           "teacher": "Irada Piriyeva, Gulyaz Najafova",
           "classroom": "204",
           "start": "08:30",
@@ -181,6 +203,7 @@
         {
           "number": 2,
           "subject": "UE328 French/IC",
+          "groups": [],
           "teacher": "Khalid Aslanov, Irada Piriyeva",
           "classroom": "202",
           "start": "10:15",
@@ -190,6 +213,7 @@
         {
           "number": 3,
           "subject": "UE315 Software Engineering/LC",
+          "groups": [],
           "teacher": "Igor Peretta",
           "classroom": "307",
           "start": "12:45",
@@ -199,6 +223,9 @@
         {
           "number": 4,
           "subject": "UE315 Software Engineering/PW",
+          "groups": [
+            "Group 1"
+          ],
           "teacher": "Igor Peretta",
           "classroom": "405",
           "start": "14:30",
