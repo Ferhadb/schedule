@@ -36,6 +36,10 @@
       padding: 24px 16px 48px;
     }
 
+    body.edit-mode {
+      padding-bottom: 112px;
+    }
+
     h1 {
       text-align: center;
       font-size: 1.6rem;
@@ -68,6 +72,60 @@
       font-size: 0.8rem;
       font-weight: 600;
       text-align: center;
+    }
+
+    .edit-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      width: max-content;
+      max-width: calc(100vw - 24px);
+      padding: 10px 12px 10px 16px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+      z-index: 900;
+    }
+
+    .edit-bar-text {
+      color: var(--green);
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .edit-bar .btn {
+      padding: 7px 12px;
+    }
+
+    @media (max-width: 520px) {
+      body.edit-mode {
+        padding-bottom: 150px;
+      }
+
+      body.edit-mode .toast {
+        bottom: 130px;
+      }
+
+      .edit-bar {
+        left: 12px;
+        right: 12px;
+        transform: none;
+        width: auto;
+        flex-wrap: wrap;
+      }
+
+      .edit-bar-text {
+        width: 100%;
+        text-align: center;
+        white-space: normal;
+      }
     }
 
     /* ---------------------------------------------------------------
@@ -391,6 +449,16 @@
       z-index: 1100;
     }
 
+    .toast.success {
+      background: rgba(74, 222, 128, 0.14);
+      border-color: rgba(74, 222, 128, 0.55);
+      color: var(--green);
+    }
+
+    body.edit-mode .toast {
+      bottom: 96px;
+    }
+
     /* ---------------------------------------------------------------
        Today highlight
     --------------------------------------------------------------- */
@@ -428,6 +496,12 @@
   <div class="week-grid" id="week-grid"></div>
 
   <div class="meta-bar" id="meta-bar"></div>
+
+  <div class="edit-bar" id="edit-bar" hidden>
+    <span class="edit-bar-text" id="edit-bar-text">Click lessons to mark office hours</span>
+    <button class="btn secondary" id="edit-cancel" type="button">Cancel</button>
+    <button class="btn primary" id="edit-save" type="button" disabled>Save changes</button>
+  </div>
 
   <div class="modal-backdrop" id="token-modal" hidden>
     <div class="modal">
@@ -467,8 +541,8 @@
     const BRANCH = "main";
     const OFFICE_FILE = "office.json";
     const TOKEN_KEY = "office_edit_key";
+    const OFFICE_CACHE_KEY = "office_cache";
     const EDIT_IDLE_MS = 10 * 60 * 1000;
-    const SAVE_DEBOUNCE_MS = 500;
 
     // ---------------------------------------------------------------
     // State
@@ -480,7 +554,6 @@
     let titleClicks = 0;
     let titleClickTimer = null;
     let idleTimer = null;
-    let saveTimer = null;
     let saveInFlight = false;
     let dirty = false;
     let memoryToken = "";
@@ -549,6 +622,34 @@
         updated_at: raw && typeof raw.updated_at === "string" ? raw.updated_at : null,
         days,
       };
+    }
+
+    function officeFingerprint(data) {
+      const days = {};
+      for (const date of Object.keys(data.days).sort()) {
+        days[date] = data.days[date]
+          .slice()
+          .sort((a, b) => a.start.localeCompare(b.start))
+          .map(entry => `${entry.start}-${entry.end}`);
+      }
+      return JSON.stringify(days);
+    }
+
+    function recalculateDirty() {
+      dirty = officeFingerprint(officeData) !== officeFingerprint(lastSavedOfficeData);
+    }
+
+    function cacheOfficeData(data) {
+      try { sessionStorage.setItem(OFFICE_CACHE_KEY, JSON.stringify(data)); } catch {}
+    }
+
+    function readCachedOffice() {
+      try {
+        const raw = sessionStorage.getItem(OFFICE_CACHE_KEY);
+        return raw ? normalizeOffice(JSON.parse(raw)) : null;
+      } catch {
+        return null;
+      }
     }
 
     function isLessonOffice(date, lesson) {
@@ -792,60 +893,95 @@
     }
 
     // ---------------------------------------------------------------
-    // Save queue
+    // Save selected office hours
     // ---------------------------------------------------------------
-    function queueOfficeSave() {
-      dirty = true;
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(runOfficeSave, SAVE_DEBOUNCE_MS);
-    }
+    async function savePendingOffice() {
+      if (saveInFlight || !dirty) return;
 
-    async function runOfficeSave() {
-      if (saveInFlight) return;
       saveInFlight = true;
+      updateEditBar();
+      resetIdleTimer();
+      const snapshot = clone(officeData);
 
-      while (dirty) {
+      try {
+        await saveOfficeData(snapshot);
+        lastSavedOfficeData = clone(snapshot);
+        cacheOfficeData(snapshot);
         dirty = false;
-        const snapshot = clone(officeData);
-        try {
-          await saveOfficeData(snapshot);
-          lastSavedOfficeData = clone(snapshot);
-        } catch (error) {
-          officeData = clone(lastSavedOfficeData);
-          renderAll();
-          if (error.status === 401) {
-            clearStoredToken();
-            setEditMode(false);
-            openTokenModal("Your token is invalid or expired. Paste a new one.");
-          } else if (error.status === 403) {
-            clearStoredToken();
-            setEditMode(false);
-            openTokenModal(
-              "This token can read but not save. Recreate it with Contents: Read and write."
-            );
-          } else {
-            showToast("Could not save office hours. Please try again.");
-          }
-          break;
+        saveInFlight = false;
+        setEditMode(false, { revert: false });
+        showToast("Office hours saved", "success");
+      } catch (error) {
+        saveInFlight = false;
+        if (error.status === 401) {
+          clearStoredToken();
+          setEditMode(false);
+          openTokenModal("Your token is invalid or expired. Paste a new one.");
+        } else if (error.status === 403) {
+          clearStoredToken();
+          setEditMode(false);
+          openTokenModal(
+            "This token can read but not save. Recreate it with Contents: Read and write."
+          );
+        } else {
+          updateEditBar();
+          resetIdleTimer();
+          showToast("Could not save office hours. Please try again.");
         }
       }
-
-      saveInFlight = false;
-      if (dirty) queueOfficeSave();
     }
 
     // ---------------------------------------------------------------
     // Edit mode + secret gesture
     // ---------------------------------------------------------------
-    function setEditMode(on) {
+    function setEditMode(on, { revert = true } = {}) {
+      if (!on && saveInFlight) return;
+
+      if (!on && revert && editMode) {
+        officeData = clone(lastSavedOfficeData);
+        dirty = false;
+        renderAll();
+      }
+
       editMode = on;
       document.body.classList.toggle("edit-mode", on);
+      updateEditBar();
       resetIdleTimer();
+    }
+
+    function updateEditBar() {
+      const bar = $("edit-bar");
+      bar.hidden = !editMode;
+      if (!editMode) return;
+
+      const count = scheduleData
+        ? scheduleData.days.reduce((total, day) => {
+            const entries = officeData.days[day.date] || [];
+            const visible = entries.filter(entry =>
+              day.lessons.some(lesson => lesson.start === entry.start && lesson.end === entry.end)
+            );
+            return total + visible.length;
+          }, 0)
+        : 0;
+
+      const label = $("edit-bar-text");
+      if (!dirty) {
+        label.textContent = "Click lessons to mark office hours";
+      } else if (!count) {
+        label.textContent = "No office lessons selected";
+      } else {
+        label.textContent = `${count} office lesson${count === 1 ? "" : "s"} selected`;
+      }
+
+      const saveButton = $("edit-save");
+      saveButton.disabled = !dirty || saveInFlight;
+      saveButton.textContent = saveInFlight ? "Saving…" : "Save changes";
+      $("edit-cancel").disabled = saveInFlight;
     }
 
     function resetIdleTimer() {
       clearTimeout(idleTimer);
-      if (editMode) {
+      if (editMode && !saveInFlight) {
         idleTimer = setTimeout(() => setEditMode(false), EDIT_IDLE_MS);
       }
     }
@@ -961,9 +1097,10 @@
       }
     }
 
-    function showToast(message) {
+    function showToast(message, type = "error") {
       const toast = $("toast");
       toast.textContent = message;
+      toast.classList.toggle("success", type === "success");
       toast.hidden = false;
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => { toast.hidden = true; }, 4500);
@@ -973,7 +1110,7 @@
     // Lesson clicks
     // ---------------------------------------------------------------
     function onGridClick(event) {
-      if (!editMode || !scheduleData) return;
+      if (!editMode || saveInFlight || !scheduleData) return;
 
       const row = event.target.closest(".lesson-row");
       if (!row) return;
@@ -987,9 +1124,10 @@
       if (!lesson) return;
 
       toggleLessonOffice(day.date, lesson);
+      recalculateDirty();
       renderAll();
+      updateEditBar();
       resetIdleTimer();
-      queueOfficeSave();
     }
 
     // ---------------------------------------------------------------
@@ -999,8 +1137,16 @@
       try {
         const response = await fetch(`${OFFICE_FILE}?v=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) return;
-        officeData = normalizeOffice(await response.json());
+
+        const remote = normalizeOffice(await response.json());
+        const cached = readCachedOffice();
+        const cachedIsNewer =
+          cached && (cached.updated_at || "") > (remote.updated_at || "");
+
+        officeData = cachedIsNewer ? cached : remote;
         lastSavedOfficeData = clone(officeData);
+        dirty = false;
+        cacheOfficeData(officeData);
       } catch {}
     }
 
@@ -1018,6 +1164,7 @@
           `Week of ${fmtDate(scheduleData.week_start)}  ·  Updated ${scheduleData.fetched_at}`;
 
         renderAll();
+        updateEditBar();
 
         $("meta-bar").innerHTML =
           `Data fetched: <strong>${scheduleData.fetched_at}</strong> &nbsp;·&nbsp; ` +
@@ -1049,6 +1196,8 @@
     // ---------------------------------------------------------------
     $("title").addEventListener("click", handleTitleClick);
     $("week-grid").addEventListener("click", onGridClick);
+    $("edit-save").addEventListener("click", savePendingOffice);
+    $("edit-cancel").addEventListener("click", () => setEditMode(false));
     $("token-cancel").addEventListener("click", closeTokenModal);
     $("token-save").addEventListener("click", connectToken);
     $("token-input").addEventListener("keydown", event => {
