@@ -28,6 +28,12 @@ jobs:
           pip install -r requirements.txt
           python -c "from importlib.metadata import version; print('edupage-api version:', version('edupage-api'))"
 
+      - name: Check EduPage connection
+        run: |
+          getent ahosts ufaz.edupage.org || true
+          curl -4 -Iv --connect-timeout 5 --max-time 10 https://ufaz.edupage.org/ || true
+          curl -6 -Iv --connect-timeout 5 --max-time 10 https://ufaz.edupage.org/ || true
+
       - name: Fetch schedule from Edupage
         env:
           EDUPAGE_USERNAME: ${{ secrets.EDUPAGE_USERNAME }}
