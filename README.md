@@ -11,16 +11,16 @@ Built so my team lead can check when I have free time to come to work.
 - Group badges on split lessons (e.g. `PW Group 1` / `PW Group 2`)
 - Green office-hour highlights on selected lessons
 - Today's column is highlighted
-- Auto-updated twice a week via GitHub Actions
+- Auto-updated twice a week from your Mac
 
 ## How it works
 
 ```
-GitHub Actions (Mon + Thu, 06:00 UTC)
+Mac scheduler (Mon + Thu, 10:00 Baku time)
     ↓
 fetch_schedule.py (logs into Edupage, dumps schedule.json)
     ↓
-git commit schedule.json → main branch
+git commit and push schedule.json → main branch
     ↓
 GitHub Pages serves index.html + schedule.json
 ```
@@ -32,22 +32,27 @@ GitHub Pages serves index.html + schedule.json
 - Push this folder to a new repo (e.g. `your-username/schedule`)
 - Go to **Settings → Pages → Source → Deploy from branch → `main` / `/ (root)`**
 
-### 2. Add Edupage credentials as repository secrets
+### 2. Set up automatic updates on your Mac
 
-Go to **Settings → Secrets and variables → Actions → New repository secret**:
+GitHub's hosted runner cannot reach `ufaz.edupage.org`, although the site opens from your Mac. In Terminal, from this repository, run:
 
-| Secret name | Value |
-|---|---|
-| `EDUPAGE_USERNAME` | Your Edupage username / email |
-| `EDUPAGE_PASSWORD` | Your Edupage password |
+```bash
+python3 scripts/local_schedule.py setup
+```
 
-### 3. Trigger the first run
+Enter your EduPage username and password at the prompts. Setup stores them in a local file that Git ignores and restricts to your macOS user, installs the Python dependency, fetches the timetable once, and pushes `schedule.json` to GitHub. It then schedules updates for Monday and Thursday at 10:00 Baku time. Your Mac must be on and logged in when the job runs; if it is asleep, macOS will run the missed job after it wakes.
 
-Go to **Actions → Fetch Edupage Schedule → Run workflow**.
+The initial push uses your existing Git credentials. If it fails, sign in to GitHub for command-line Git, then run the setup command again. GitHub Pages may take a few minutes to show the new file.
 
-After it completes, `schedule.json` will be updated and the page will show your real data.
+To run an update manually:
 
-### 4. Share the link
+```bash
+python3 scripts/local_schedule.py run
+```
+
+If an automatic update fails, inspect `.schedule-update-error.log` in this repository.
+
+### 3. Share the link
 
 Your GitHub Pages URL will be:
 ```
